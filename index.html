@@ -87,6 +87,21 @@
 }
 </style>
 
+
+<style id="adopted-by-pill-style">
+.adopted-by-pill {
+    display: inline-block;
+    margin: 0 0 14px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #f5d7e5;
+    color: #7a3555;
+    font-weight: 700;
+    font-size: .9rem;
+    border: 1px solid rgba(122, 80, 52, .12);
+}
+</style>
+
 </head>
 
 <body>
@@ -215,6 +230,7 @@ function createFamiliarCard(familiar) {
     const name = displayValue(familiar.name, "Unnamed Familiar");
     const image = getImage(familiar.image || familiar.icon || familiar.mainRef);
     const status = displayValue(familiar.adoptionStatus || familiar.status, "Available");
+    const adoptedBy = displayValue(familiar.adoptedBy || familiar.adopter || familiar["Adopted By"], "");
     const price = money(familiar.price);
     const link = familiar.link || familiar.profile || familiar.url || "";
 
@@ -237,6 +253,12 @@ function createFamiliarCard(familiar) {
                 <h3>🐾 ${name}</h3>
                 ${price ? `<span class="price-pill">${price}</span>` : ""}
             </div>
+
+            ${statusClass === "adopted" && adoptedBy ? `
+                <div class="adopted-by-pill">
+                    ♥ Adopted by ${adoptedBy}
+                </div>
+            ` : ""}
 
             <div class="familiar-facts">
                 ${factRow("Species", familiar.species)}
