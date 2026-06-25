@@ -152,16 +152,16 @@ body::before {
 
 .familiar-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
     gap: 24px;
 }
 
 .familiar-card {
-    display: grid;
-    grid-template-columns: 46% 1fr;
+    d    display: grid;
+    grid-template-columns: 38% 1fr;
     grid-template-areas:
         "image facts"
-        "summary summary";
+        "summary facts";
     gap: 18px;
     padding: 20px;
     border-radius: 28px;
