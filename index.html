@@ -7,6 +7,86 @@
 <title>Familiar Adoption Center</title>
 
 <link rel="stylesheet" href="./style.css?v=1">
+
+<style id="familiar-layout-lightbox-fix">
+.familiar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+    gap: 24px;
+}
+
+.familiar-card {
+    display: grid;
+    grid-template-columns: 38% 1fr;
+    grid-template-areas:
+        "image facts"
+        "summary facts";
+    gap: 18px;
+}
+
+.familiar-image-wrap {
+    min-height: 220px;
+}
+
+.familiar-image-wrap img {
+    cursor: zoom-in;
+}
+
+.image-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(45, 25, 15, .88);
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.image-lightbox.active {
+    display: flex;
+}
+
+.image-lightbox img {
+    max-width: 95%;
+    max-height: 90vh;
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35);
+    background: rgba(255,250,242,.3);
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 22px;
+    right: 28px;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,250,242,.9);
+    color: #5a2f22;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .familiar-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .familiar-card {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "image"
+            "facts"
+            "summary";
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -53,6 +133,12 @@
     </div>
 
 </main>
+
+
+<div id="imageLightbox" class="image-lightbox">
+    <button id="lightboxClose" class="lightbox-close">×</button>
+    <img id="lightboxImage" src="" alt="Full view">
+</div>
 
 <script>
 const API_URL = "https://familiars.crysthigpen.workers.dev/familiars";
@@ -137,7 +223,13 @@ function createFamiliarCard(familiar) {
     card.innerHTML = `
         <div class="familiar-image-wrap">
             <span class="status-badge ${statusClass}">${status}</span>
-            <img src="${image}" alt="${name}" onerror="this.src='images/placeholder.png'">
+            <img
+                src="${image}"
+                alt="${name}"
+                class="lightbox-trigger"
+                data-full="${image}"
+                onerror="this.src='images/placeholder.png'"
+            >
         </div>
 
         <div class="familiar-info">
@@ -170,6 +262,14 @@ function createFamiliarCard(familiar) {
             ` : ""}
         </div>
     `;
+
+    const cardImage = card.querySelector(".lightbox-trigger");
+
+    if (cardImage) {
+        cardImage.addEventListener("click", () => {
+            openLightbox(cardImage.dataset.full);
+        });
+    }
 
     return card;
 }
@@ -223,7 +323,50 @@ async function loadFamiliars() {
     }
 }
 
+
+function openLightbox(src) {
+    const box = document.getElementById("imageLightbox");
+    const img = document.getElementById("lightboxImage");
+
+    if (!box || !img) return;
+
+    img.src = src;
+    box.classList.add("active");
+}
+
+function closeLightbox() {
+    const box = document.getElementById("imageLightbox");
+    const img = document.getElementById("lightboxImage");
+
+    if (!box || !img) return;
+
+    box.classList.remove("active");
+    img.src = "";
+}
+
+function setupLightbox() {
+    const box = document.getElementById("imageLightbox");
+    const close = document.getElementById("lightboxClose");
+
+    if (close) close.addEventListener("click", closeLightbox);
+
+    if (box) {
+        box.addEventListener("click", event => {
+            if (event.target.id === "imageLightbox") {
+                closeLightbox();
+            }
+        });
+    }
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeLightbox();
+        }
+    });
+}
+
 setupTabs();
+setupLightbox();
 loadFamiliars();
 </script>
 
