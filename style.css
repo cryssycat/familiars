@@ -371,3 +371,14 @@ body::before {
     font-size: 2rem;
     cursor: pointer;
 }
+
+.adopted-by-pill{
+    display:inline-block;
+    margin:8px 0 14px;
+    padding:6px 12px;
+    border-radius:999px;
+    background:#f5d7e5;
+    color:#7a3555;
+    font-weight:700;
+    font-size:.9rem;
+}
