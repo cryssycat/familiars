@@ -184,7 +184,7 @@ body::before {
     position: relative;
     overflow: hidden;
     border-radius: 22px;
-    min-height: 230px;
+     min-height: 220px;
     background: #ead0ad;
 }
 
