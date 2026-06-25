@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Familiar Adoption Center</title>
+
+<link rel="stylesheet" href="./style.css?v=1">
+</head>
+
+<body>
+
+<header class="adoption-header">
+    <a class="back-button" href="../index.html">← Back to Hub</a>
+
+    <div class="header-card">
+        <p class="kicker">☕ Familiar Adoption Center</p>
+        <h1>Familiar Adoption Center</h1>
+        <p class="tagline">Give a familiar a home. Change a life. ♥</p>
+    </div>
+</header>
+
+<main class="adoption-page">
+
+    <nav class="adoption-tabs" id="adoptionTabs">
+        <button class="adoption-tab active" data-tab="available">🐾 Available</button>
+        <button class="adoption-tab" data-tab="adopted">♥ Adopted</button>
+    </nav>
+
+    <section id="availablePanel" class="adoption-panel active">
+        <div class="section-title">
+            <h2>Available Familiars</h2>
+            <p>These familiars are currently looking for homes.</p>
+        </div>
+        <div id="availableGrid" class="familiar-grid">
+            <p class="loading">Loading available familiars...</p>
+        </div>
+    </section>
+
+    <section id="adoptedPanel" class="adoption-panel">
+        <div class="section-title">
+            <h2>Adopted Familiars</h2>
+            <p>These familiars have already found homes.</p>
+        </div>
+        <div id="adoptedGrid" class="familiar-grid">
+            <p class="loading">Loading adopted familiars...</p>
+        </div>
+    </section>
+
+    <div class="footer-note">
+        ☕ All familiars deserve a cozy, loving home. Please adopt responsibly. ♡
+    </div>
+
+</main>
+
+<script>
+const API_URL = "https://charahub.crysthigpen.workers.dev/familiars";
+
+const availableGrid = document.getElementById("availableGrid");
+const adoptedGrid = document.getElementById("adoptedGrid");
+const tabs = document.querySelectorAll(".adoption-tab");
+const panels = document.querySelectorAll(".adoption-panel");
+
+function setupTabs() {
+    tabs.forEach(button => {
+        button.addEventListener("click", () => {
+            const tab = button.dataset.tab;
+
+            tabs.forEach(btn => btn.classList.remove("active"));
+            panels.forEach(panel => panel.classList.remove("active"));
+
+            button.classList.add("active");
+
+            const panel = document.getElementById(`${tab}Panel`);
+            if (panel) panel.classList.add("active");
+        });
+    });
+}
+
+function getImage(path) {
+    if (!path) return "images/placeholder.png";
+
+    path = String(path).trim();
+
+    if (!path) return "images/placeholder.png";
+    if (path.startsWith("http")) return path;
+    if (path.startsWith("/")) return window.location.origin + path;
+
+    return window.location.origin + "/" + path;
+}
+
+function normalizeStatus(value) {
+    return String(value || "").trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+function displayValue(value, fallback = "—") {
+    return value && String(value).trim() ? value : fallback;
+}
+
+function money(value) {
+    if (value === undefined || value === null || value === "") return "";
+
+    const number = Number(value);
+
+    if (Number.isNaN(number)) return String(value);
+
+    return "$" + number.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
+}
+
+function factRow(label, value) {
+    if (!value && value !== 0) return "";
+
+    return `
+        <p>
+            <strong>${label}:</strong>
+            <span>${displayValue(value)}</span>
+        </p>
+    `;
+}
+
+function createFamiliarCard(familiar) {
+    const card = document.createElement("article");
+    card.className = "familiar-card";
+
+    const name = displayValue(familiar.name, "Unnamed Familiar");
+    const image = getImage(familiar.image || familiar.icon || familiar.mainRef);
+    const status = displayValue(familiar.adoptionStatus || familiar.status, "Available");
+    const price = money(familiar.price);
+    const link = familiar.link || familiar.profile || familiar.url || "";
+
+    const statusClass = normalizeStatus(status);
+
+    card.innerHTML = `
+        <div class="familiar-image-wrap">
+            <span class="status-badge ${statusClass}">${status}</span>
+            <img src="${image}" alt="${name}" onerror="this.src='images/placeholder.png'">
+        </div>
+
+        <div class="familiar-info">
+            <div class="familiar-title-row">
+                <h3>🐾 ${name}</h3>
+                ${price ? `<span class="price-pill">${price}</span>` : ""}
+            </div>
+
+            <div class="familiar-facts">
+                ${factRow("Species", familiar.species)}
+                ${factRow("Type", familiar.type)}
+                ${factRow("Rarity", familiar.rarity)}
+                ${factRow("Age", familiar.age)}
+                ${factRow("Size", familiar.size)}
+                ${factRow("Temperament", familiar.temperament)}
+                ${factRow("Magic", familiar.magic)}
+                ${factRow("Ability", familiar.ability)}
+                ${factRow("Favorite Treat", familiar.favoriteTreat)}
+            </div>
+        </div>
+
+        <div class="familiar-summary">
+            <h4>Summary</h4>
+            <p>${displayValue(familiar.summary || familiar.notes, "No summary yet.")}</p>
+
+            ${link ? `
+                <a class="adopt-link" href="${link}" target="_blank" rel="noopener noreferrer">
+                    View More →
+                </a>
+            ` : ""}
+        </div>
+    `;
+
+    return card;
+}
+
+function renderFamiliars(familiars) {
+    const available = familiars.filter(familiar =>
+        normalizeStatus(familiar.adoptionStatus || familiar.status) === "available"
+    );
+
+    const adopted = familiars.filter(familiar =>
+        normalizeStatus(familiar.adoptionStatus || familiar.status) === "adopted"
+    );
+
+    availableGrid.innerHTML = "";
+    adoptedGrid.innerHTML = "";
+
+    if (available.length === 0) {
+        availableGrid.innerHTML = "<p class='loading'>No available familiars right now.</p>";
+    } else {
+        available.forEach(familiar => availableGrid.appendChild(createFamiliarCard(familiar)));
+    }
+
+    if (adopted.length === 0) {
+        adoptedGrid.innerHTML = "<p class='loading'>No adopted familiars yet.</p>";
+    } else {
+        adopted.forEach(familiar => adoptedGrid.appendChild(createFamiliarCard(familiar)));
+    }
+}
+
+async function loadFamiliars() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            availableGrid.innerHTML = "<p class='loading'>The API loaded, but did not return a familiar list.</p>";
+            adoptedGrid.innerHTML = "<p class='loading'>The API loaded, but did not return a familiar list.</p>";
+            return;
+        }
+
+        renderFamiliars(data);
+    } catch (error) {
+        console.error("Familiar Adoption Center error:", error);
+        availableGrid.innerHTML = "<p class='loading'>Could not load familiars.</p>";
+        adoptedGrid.innerHTML = "<p class='loading'>Could not load familiars.</p>";
+    }
+}
+
+setupTabs();
+loadFamiliars();
+</script>
+
+</body>
+</html>
