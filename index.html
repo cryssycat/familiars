@@ -55,7 +55,7 @@
 </main>
 
 <script>
-const API_URL = "familiars.crysthigpen.workers.dev";
+const API_URL = "https://familiars.crysthigpen.workers.dev/familiars";
 
 const availableGrid = document.getElementById("availableGrid");
 const adoptedGrid = document.getElementById("adoptedGrid");
@@ -201,7 +201,12 @@ function renderFamiliars(familiars) {
 
 async function loadFamiliars() {
     try {
-        const response = await fetch(API_URL);
+        let response = await fetch(API_URL);
+
+        if (!response.ok && API_URL.endsWith("/familiars")) {
+            response = await fetch(API_URL.replace(/\/familiars$/, ""));
+        }
+
         const data = await response.json();
 
         if (!Array.isArray(data)) {
