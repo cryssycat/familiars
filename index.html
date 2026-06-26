@@ -273,16 +273,7 @@ function createFamiliarCard(familiar) {
             </div>
         </div>
 
-        <div class="familiar-summary">
-            <h4>Summary</h4>
-            <p>${displayValue(familiar.summary || familiar.notes, "No summary yet.")}</p>
-
-            ${link ? `
-                <a class="adopt-link" href="${link}" target="_blank" rel="noopener noreferrer">
-                    View More →
-                </a>
-            ` : ""}
-        </div>
+       
     `;
 
     const cardImage = card.querySelector(".lightbox-trigger");
