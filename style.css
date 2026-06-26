@@ -157,11 +157,10 @@ body::before {
 }
 
 .familiar-card {
-    d    display: grid;
-    grid-template-columns: 38% 1fr;
-    grid-template-areas:
-        "image facts"
-        "summary facts";
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: start;
     gap: 18px;
     padding: 20px;
     border-radius: 28px;
